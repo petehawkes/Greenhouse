@@ -171,8 +171,18 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "/opt/oblong/deps-64-8/include/ImageMagick/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DMAGICKCORE_HDRI_ENABLE=0",
+					"-DMAGICKCORE_QUANTUM_DEPTH=16",
+				);
+				OTHER_LDFLAGS = (
+					"-lMagick++6-Q16",
+					"-lMagickCore6-Q16",
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -191,7 +201,17 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "/opt/oblong/deps-64-8/include/ImageMagick/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DMAGICKCORE_HDRI_ENABLE=0",
+					"-DMAGICKCORE_QUANTUM_DEPTH=16",
+				);
+				OTHER_LDFLAGS = (
+					"-lMagick++6-Q16",
+					"-lMagickCore6-Q16",
+				);
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -199,6 +219,7 @@
 		5649DC4B16F921580048F7B1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -206,6 +227,7 @@
 					/opt/oblong/greenhouse/include,
 					"/opt/oblong/deps-64-8/.bon-jovi/include",
 					"/opt/oblong/deps-64-8/include",
+					"/opt/oblong/deps-64-8/include/ImageMagick/**",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"/opt/oblong/deps-64-8/.bon-jovi/lib",
@@ -220,6 +242,7 @@
 		5649DC4C16F921580048F7B1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -227,6 +250,7 @@
 					/opt/oblong/greenhouse/include,
 					"/opt/oblong/deps-64-8/.bon-jovi/include",
 					"/opt/oblong/deps-64-8/include",
+					"/opt/oblong/deps-64-8/include/ImageMagick/**",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"/opt/oblong/deps-64-8/.bon-jovi/lib",
