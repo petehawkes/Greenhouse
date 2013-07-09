@@ -1283,7 +1283,7 @@ class DataSystem  :  public Thing
         { ZeroTime ();   //  Zero out CurTime ()
 
           //  Translate the DataSystem
-          IncTranslation (2.0 * FistMotion (e, PhysLoc ()));
+          IncTranslation (0.8 * FistMotion (e, PhysLoc ()));
         }
     }
 
