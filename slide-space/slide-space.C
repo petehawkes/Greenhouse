@@ -13,29 +13,46 @@
  **/
 
 
-Trove <Vect> slide_vects;
-Trove <Str> slide_names;
-
-Vect active_vect;
-
-
 
 
 class Slide  :  public Thing
 { public:
   
-  Str src_path;
+  Str src;
+  bool is_vid;
+  Image *img;
+  Video *vid;
 
-  Slide (const Str &src_path)  :  Thing ()
-    {
-    
+  Slide (const Str src_path, Vect offset, float wid)  :  Thing ()
+    { src = src_path;
+      Str srcCheck = src.Slice (-3);
+      if (srcCheck == "png" )
+        { img = new Image (src);
+          img -> SetWidthUniformly (wid * .9);
+          AppendKid (img);
+          is_vid = false;
+        } else if (srcCheck == "mp4" ){
+          vid = new Video (src);
+          vid -> SetWidthUniformly (wid * .9);
+          vid -> EnableLooping ();
+          vid -> SetCornerRadius (0);
+          AppendKid (vid);
+          //vid -> Play ();
+          is_vid = true;
+        }
+      IncTranslation (offset);
     }
 
+  void slide_on ()
+    { if (is_vid) vid -> Play (); }
+  
+  void slide_off ()
+    { if (is_vid) vid -> Stop (); }
 
 };
 
 
-class Mover  :  public Sketch
+class Mover  :  public Thing
 { public:
   
   float width;
@@ -46,10 +63,13 @@ class Mover  :  public Sketch
   Vect start;
   float wid, hei;
   
-  //int slide_count = 8;
+  Trove <Vect> slide_vects;
+  Trove <Str> slide_names;
+
   int active_slide = 0;
+  Vect active_vect;
   
-  Mover ()  :  Sketch ()
+  Mover ()  :  Thing ()
   { width = 8.0;
     
     // store feld dimenions and orientation
@@ -62,10 +82,39 @@ class Mover  :  public Sketch
     
     SlapOnFeld();
     
-    //    // draw
-    //    SetStroked (false);
-    //    SetFillColor (Color (1, 1, 1));
-    //    DrawEllipse (Vect (0, 0, 0), width, width);
+    for (int i = 0  ;  i < 8  ;  ++i)
+      { slide_vects.Append (Vect (0.0, 0.0, -i * 1000.0));
+        //slide_vects.Append (Vect (cos ( 2 * PI * i / 7 + PI / 2) * 1000, 0.0, sin ( 2 * PI * i / 7 + PI / 2) * 2000));
+      }
+    
+    slide_names.Append ("slides/oblong.001.png");
+    slide_names.Append ("slides/oblong.002.png");
+    slide_names.Append ("slides/oblong.003.png");
+    slide_names.Append ("slides/oblong.004.png");
+    slide_names.Append ("slides/oblong.005.png");
+    slide_names.Append ("slides/oblong.006.png");
+    slide_names.Append ("slides/oblong.007.png");
+    slide_names.Append ("slides/move-scale.mp4");
+    
+    slide_names.Append ("slides/move-scale.mp4");
+    slide_names.Append ("slides/move-scale.mp4");
+    slide_names.Append ("slides/move-scale.mp4");
+    slide_names.Append ("slides/move-scale.mp4");
+    slide_names.Append ("slides/move-scale.mp4");
+    slide_names.Append ("slides/move-scale.mp4");
+    slide_names.Append ("slides/move-scale.mp4");
+    slide_names.Append ("slides/move-scale.mp4");
+
+
+    
+    slide_vects.Append (Vect (400.0, 400.0, 0));
+    slide_vects.Append (Vect (400.0, 0.0, -1000));
+    slide_vects.Append (Vect (400.0, -400.0, 0));
+    slide_vects.Append (Vect (-400.0, 400.0, 1000));
+    slide_vects.Append (Vect (-400.0, 0, -1000));
+    slide_vects.Append (Vect (-400.0, -400.0, 0));
+    slide_vects.Append (Vect (0, 400.0, 1000));
+    slide_vects.Append (Vect (0, -400.0, 0));
     
     start = Translation ();
   }
@@ -75,21 +124,33 @@ class Mover  :  public Sketch
   }
   
   void NextSlide ()
-  { active_slide++;
+  { Slide *s  = NthKid <Slide> ( active_slide );
+    s -> slide_off ();
+    //
+    active_slide++;
     if (active_slide >= slide_names.Count ()) active_slide = 0;
     TranslationAnimateQuadratic (0.5);
     Vect move = slide_vects[active_slide];
     move.Scale (Vect (-1, -1, -1));
     SetTranslation(start + move);
+    //
+    s = NthKid <Slide> ( active_slide );
+    s -> slide_on ();
   }
   
   void PrevSlide ()
-  { active_slide--;
+  { Slide *s  = NthKid <Slide> ( active_slide );
+    s -> slide_off ();
+    //
+    active_slide--;
     if (active_slide < 0) active_slide = slide_names.Count () - 1;
     TranslationAnimateQuadratic (0.5);
     Vect move = slide_vects[active_slide];
     move.Scale (Vect (-1, -1, -1));
     SetTranslation(start + move);
+    //
+    s = NthKid <Slide> ( active_slide );
+    s -> slide_on ();
   }
   
   void PointingHarden (PointingEvent *e)
@@ -105,20 +166,8 @@ class Mover  :  public Sketch
     PrevSlide ();
   }
   
-  /*
-   void FistAppear (PointingEvent *e)
-   { // get control of this object if there's no one already controlling it
-   if (IsLeftHandish (e))
-   NextSlide ();
-   else
-   PrevSlide ();
-   }
-   */
-  
-  
   Vect MapToFeld (Vect v)
   { return Vect (v . ProjectOnto (over) + v . ProjectOnto (up) + v . ProjectOnto (norm)); }
-  
   
 };
 
@@ -126,85 +175,16 @@ class Mover  :  public Sketch
 
 
 void Setup ()
-{ for (int i = 0  ;  i <= 7  ;  ++i)
-  { slide_vects.Append (Vect (0.0, 0.0, -i * 1000.0));
-    //slide_vects.Append (Vect (cos ( 2 * PI * i / 7 + PI / 2) * 1000, 0.0, sin ( 2 * PI * i / 7 + PI / 2) * 2000));
-  }
+{ Mover *m = new Mover ();
   
-  //Str n = foo.Slice (-3);
-  
-  //INFORM ("checking:" + n);
-  
-  
-  slide_names.Append ("slides/oblong.001.png");
-  slide_names.Append ("slides/oblong.002.png");
-  slide_names.Append ("slides/oblong.003.png");
-  slide_names.Append ("slides/oblong.004.png");
-  slide_names.Append ("slides/oblong.005.png");
-  slide_names.Append ("slides/oblong.006.png");
-  slide_names.Append ("slides/oblong.007.png");
-  slide_names.Append ("images/move-scale.mp4");
-  
-  slide_names.Append ("slides/oblong.001.png");
-  slide_names.Append ("slides/oblong.002.png");
-  slide_names.Append ("slides/oblong.003.png");
-  slide_names.Append ("slides/oblong.004.png");
-  slide_names.Append ("slides/oblong.005.png");
-  slide_names.Append ("slides/oblong.006.png");
-  slide_names.Append ("slides/oblong.007.png");
-  slide_names.Append ("slides/move-scale.mp4");
-  
-  
-  //
-  //  slide_names.Append ("images/move-scale.mp4");
-  //  slide_names.Append ("images/move-scale.mp4");
-  //  slide_names.Append ("images/move-scale.mp4");
-  //  slide_names.Append ("images/move-scale.mp4");
-  //  slide_names.Append ("images/move-scale.mp4");
-  //  slide_names.Append ("images/move-scale.mp4");
-  //  slide_names.Append ("images/move-scale.mp4");
-  //  slide_names.Append ("images/move-scale.mp4");
-  
-  
-  slide_vects.Append (Vect (0.0, 0.0, 0));
-  slide_vects.Append (Vect (400.0, 0.0, -1000));
-  slide_vects.Append (Vect (400.0, -400.0, 0));
-  slide_vects.Append (Vect (-400.0, 400.0, 1000));
-  slide_vects.Append (Vect (-400.0, 0, -1000));
-  slide_vects.Append (Vect (-400.0, -400.0, 0));
-  slide_vects.Append (Vect (0, 400.0, 1000));
-  slide_vects.Append (Vect (0, -400.0, 0));
-  
-  Mover *m = new Mover ();
-  
-  for (int i = 0  ;  i <= slide_names.Count()  ;  ++i)
-    { Str str = slide_names[i];
-      Str strCheck = str.Slice (-3);
-      if (strCheck == "png" )
-        { Image *img = new Image (str);
-          m -> AppendKid (img);
-          img -> IncTranslation (slide_vects[i]);
-          img -> SetWidthUniformly (m -> wid * .9);
-          //all_slides.Append (img);
-        } else if (strCheck == "mp4" ){
-          Video *vid = new Video (str);
-          m -> AppendKid (vid);
-          vid -> IncTranslation (slide_vects[i]);
-          vid -> SetWidthUniformly (m -> wid * .9);
-          vid -> EnableLooping ();
-          vid -> Play ();
-          vid -> SetCornerRadius (0);
-          //all_slides.Append (vid);
-        }
+  for (int i = 0  ;  i < m -> slide_names.Count()  ;  ++i)
+    { Slide *s = new Slide (m -> slide_names[i], m -> slide_vects[i], m -> wid);
+      m -> AppendKid (s);
     }
+  m -> NthKid <Slide> (0) -> slide_on ();
   
   // color the background
   SetFeldsColor (Color (.2706, .2706, .3098));
-  // generate a new random seed for unique results each time
-  SeedRandomizer ();
-  // add the Mover
-  
-  
   
   
 }
